@@ -121,6 +121,13 @@ module Psych
           rescue DataMapper::ObjectNotFoundError
             raise Delayed::DeserializationError
           end
+        when /^!ruby\/object:Hash\s*$/
+          # treat `---!ruby/object:Hash` the same as `---`
+          # otherwise psych would choke when parsing the former
+          # see https://github.com/harleyttd/delayed_job/issues/1
+          object.tag = nil
+          visit_Psych_Nodes_Mapping_without_class(object)
+
         else
           visit_Psych_Nodes_Mapping_without_class(object)
         end
